@@ -15,34 +15,33 @@ class Cl_CmdLine_Command_ByUser
 
     public function __construct($sProject, $sUsername)
     {
-        global $_PROJECTS;
-
         $this->_sProject = $sProject;
 
         $this->_sUsername = $sUsername;
 
-        $this->_aConfig = $_PROJECTS[$sProject];
+        $this->_aConfig = Cl_Config::getInstance()->getProject($sProject);
 
-        $this->_build();
+        $this->_exec();
     }
 
-    private function _getSvnBaseUrl()
+    private function _exec()
     {
-        return 'svn://' . $this->_aConfig['svn.server'] . '/' . $this->_aConfig['svn.project'];
-    }
-
-    private function _build()
-    {
-        // svn base url
-        $sSvnBaseUrl = $this->_getSvnBaseUrl() . '/trunk';
+        // init 
+        $oSvnAdapter = new Cl_Svn_Adapter(
+            $this->_aConfig
+            );
 
         // tmp file base
-        $sTmpFileBase = PROJECT_ROOT . '/tmp/' . md5($sSvnBaseUrl/* . microtime(true)*/);
+        $sTmpFileBase = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject/* . microtime(true)*/);
 
         // get log
         $sLog = $sTmpFileBase . '.history.log';
 
-        Cl_Svn_Adapter::cmdLog($sSvnBaseUrl, $sLog);
+        $oSvnAdapter->log(
+            '',
+            false,
+            $sLog
+            );
 
         // get parser for log
         $oParserLog = new Cl_Parser_Log();
@@ -59,7 +58,13 @@ class Cl_CmdLine_Command_ByUser
             $sOutput .= 'R' . $iRev . " - " . $aCommit['date'] . "\n";
             $sOutput .= $aCommit['message'] . "\n\n";
 
-            $sDiff = Cl_Svn_Adapter::cmdDiff($sSvnBaseUrl, $iRev - 1, $iRev);
+            $sDiff = $oSvnAdapter->diff(
+                $iRev - 1,
+                $iRev,
+                '',
+                false,
+                false
+                );
 
             $sOutput .= $sDiff . "\n\n";
 

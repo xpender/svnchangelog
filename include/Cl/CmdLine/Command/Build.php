@@ -13,32 +13,31 @@ class Cl_CmdLine_Command_Build
 
     public function __construct($sProject)
     {
-        global $_PROJECTS;
-
         $this->_sProject = $sProject;
 
-        $this->_aConfig = $_PROJECTS[$sProject];
+        $this->_aConfig = Cl_Config::getInstance()->getProject($sProject);
 
-        $this->_build();
+        $this->_exec();
     }
 
-    private function _getSvnBaseUrl()
+    private function _exec()
     {
-        return 'svn://' . $this->_aConfig['svn.server'] . '/' . $this->_aConfig['svn.project'];
-    }
-
-    private function _build()
-    {
-        // svn base url
-        $sSvnBaseUrl = $this->_getSvnBaseUrl();
+        // init 
+        $oSvnAdapter = new Cl_Svn_Adapter(
+            $this->_aConfig
+            );
 
         // tmp file base
-        $sTmpFileBase = PROJECT_ROOT . '/tmp/' . md5($sSvnBaseUrl/* . microtime(true)*/);
+        $sTmpFileBase = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject/* . microtime(true)*/);
 
         // fetch list of tags
         $sTagsList = $sTmpFileBase . '.tags.list.xml';
 
-        Cl_Svn_Adapter::cmdList($sSvnBaseUrl . '/tags', $sTagsList);
+        $oSvnAdapter->llist(
+            'tags/',
+            true,
+            $sTagsList
+            );
 
         // parser all tags
         $oParserTags = new Cl_Parser_Tags();
@@ -89,7 +88,13 @@ class Cl_CmdLine_Command_Build
             // fetch log
             $sTagLog = $sTmpFileBase . '.' . $sTagName . '.log';
 
-            Cl_Svn_Adapter::cmdLogRevMerge($sSvnBaseUrl . '/tags/' . $sTagName, $iParentRev, $iCurrentRev, $sTagLog);
+            $oSvnAdapter->logRevMerge(
+                $iParentRev,
+                $iCurrentRev,
+                'tags/' . $sTagName . '/',
+                false,
+                $sTagLog
+                );
 
             // parse commit info
             $aAllCommits = $oParserLog->parseWithMergeHistory($sTagLog);

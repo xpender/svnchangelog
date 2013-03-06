@@ -7,55 +7,117 @@
  */
 class Cl_Svn_Adapter
 {
-    private static $_svnUser = 'svn';
-    private static $_svnPass = '***';
+    private $_aConfig;
 
-    private static function _execute($sCommand, $sOutputFile, $bReturn = false)
+    public function __construct($aConfig)
     {
-        echo '- exec: ' . str_replace(self::$_svnPass, '***', $sCommand) . "\n";
+        $this->_aConfig = $aConfig;
+    }
+
+    public function setConfig($aConfig)
+    {
+        $this->_aConfig = $aConfig;
+    }
+
+    public function getSvnUrl()
+    {
+        $sSvnUrl = '';
+
+        if ($this->_aConfig['svn.proto'] == 'http') {
+            $sSvnUrl .= 'http://';
+        } elseif ($this->_aConfig['svn.proto'] == 'svn') {
+            $sSvnUrl .= 'svn://';
+        } elseif ($this->_aConfig['svn.proto'] == 'svn+ssh') {
+            $sSvnUrl .= 'svn+ssh://';
+        } else {
+            throw new Exception(
+                'Unknown svn.proto'
+                );
+        }
+
+        $sSvnUrl .= $this->_aConfig['svn.server'];
+        $sSvnUrl .= '/' . $this->_aConfig['svn.repo'] . '/';
+
+        return $sSvnUrl;
+    }
+
+    private function _execute($sCommand, $sArguments, $sOutputFile = false)
+    {
+        $sCommand = 'svn ' . $sCommand . ' --non-interactive ';
+
+        if ($this->_aConfig['svn.auth'] == 'userpass') {
+            $sCommand .= '--username ' . $this->_aConfig['svn.user'] . ' ';
+            $sCommand .= '--password ' . $this->_aConfig['svn.pass'] . ' ';
+        } elseif ($this->_aConfig['svn.auth'] == 'kerberos') {
+            $sCommand .= '--username ' . $this->_aConfig['svn.user'] . ' ';
+        } else {
+            throw new Exception(
+                'Unknown svn.auth'
+                );
+        }
+
+        $sCommand .= $sArguments;
+
+        echo "[#] " . $sCommand . "\n";
 
         ob_start();
-
-        passthru($sCommand);
+        passthru($sCommand, &$iReturn);
 
         $sOutput = ob_get_contents();
-        
+
         ob_end_clean();
 
-        if ($bReturn) {
-            return $sOutput;
-        } else {
-            file_put_contents($sOutputFile, $sOutput);
-
-            unset($sOutput);
+        if ($iReturn != 0) {
+            throw new Exception(
+                'svn errcode ' . $iReturn
+                );
         }
+
+        if ($sOutputFile) {
+            file_put_contents(
+                $sOutputFile,
+                $sOutput
+                );
+        } else {
+            return $sOutput;
+        }
+
+        return true;
     }
 
-    public static function cmdDiff($sSvnUrl, $sOldRev, $sNewRev)
+    public function diff($sOldRev, $sNewRev, $sPath = '', $bXml = false, $sOutputFile = false)
     {
-        $sCommand = 'svn diff --non-interactive --username ' . self::$_svnUser . ' --password ' . self::$_svnPass . ' -r' . $sOldRev . ':' . $sNewRev . ' ' . $sSvnUrl;
-
-        return self::_execute($sCommand, null, true);
+        return self::_execute(
+            'diff',
+            ($bXml ? '--xml ' : '') . '-r ' . $sOldRev . ':' . $sNewRev . ' ' . $this->getSvnUrl() . $sPath,
+            $sOutputFile
+            );
     }
 
-    public static function cmdList($sSvnUrl, $sOutputFile)
+    public function llist($sPath = '', $bXml = false, $sOutputFile = false)
     {
-        $sCommand = 'svn list --non-interactive --xml --username ' . self::$_svnUser . ' --password ' . self::$_svnPass . ' ' . $sSvnUrl;
-
-        return self::_execute($sCommand, $sOutputFile);
+        return self::_execute(
+            'list',
+            ($bXml ? '--xml ' : '') . $this->getSvnUrl() . $sPath,
+            $sOutputFile
+            );
     }
 
-    public static function cmdLog($sSvnUrl, $sOutputFile)
+    public function log($sPath = '', $bXml = false, $sOutputFile = false)
     {
-        $sCommand = 'svn log --non-interactive --username ' . self::$_svnUser . ' --password ' . self::$_svnPass . ' ' . $sSvnUrl;
-
-        return self::_execute($sCommand, $sOutputFile);
+        return self::_execute(
+            'log',
+            ($bXml ? '--xml ' : '') . $this->getSvnUrl() . $sPath,
+            $sOutputFile
+            );
     }
 
-    public static function cmdLogRevMerge($sSvnUrl, $iRevStart, $iRevEnd, $sOutputFile)
+    public function logRevMerge($sOldRev, $sNewRev, $sPath = '', $bXml = false, $sOutputFile = false)
     {
-        $sCommand = 'svn log --non-interactive --incremental --username ' . self::$_svnUser . ' --password ' . self::$_svnPass . ' -g -r' . $iRevStart . ':' . $iRevEnd .  ' ' . $sSvnUrl;
-
-        return self::_execute($sCommand, $sOutputFile);
+        return self::_execute(
+            'log',
+            '-g ' . ($bXml ? '--xml ' : '') .  '-r ' . $sOldRev . ':' . $sNewRev . ' ' . $this->getSvnUrl() . $sPath,
+            $sOutputFile
+            );
     }
 }
