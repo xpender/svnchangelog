@@ -7,6 +7,6 @@ class Cl_Autoload
             return false;
         }
 
-        require str_replace('_', PATH_SEPARATOR, $sClassName) . '.php';
+        require str_replace('_', DIRECTORY_SEPARATOR, $sClassName) . '.php';
     }
 }
