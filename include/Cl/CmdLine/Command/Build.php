@@ -5,7 +5,7 @@
  * @package net.xpender.svnchangelog
  * @author Marko Kercmar <m.kercmar@bigpoint.net>
  */
-class Cl_Client_Command_Build
+class Cl_CmdLine_Command_Build
 {
     private $_sProject;
 
