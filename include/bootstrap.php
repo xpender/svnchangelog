@@ -14,6 +14,13 @@ ini_set(
     '.:' . PROJECT_ROOT . '/include/:' . ini_get('include_path')
     );
 
+// autoloader
+require 'Cl/Autoload.php';
+
+spl_autoload_register(
+    array('Cl_Autoload', 'autoload')
+    );
+
 // get config
 require 'config.inc.php';
 
