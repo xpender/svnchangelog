@@ -23,6 +23,3 @@ spl_autoload_register(
 
 // get config
 require 'config.inc.php';
-
-// get classes
-require 'classes.inc.php';
