@@ -32,9 +32,14 @@ class Cl_Config
         return $this->_aConfig['data.path'];
     }
 
+    public function getTmpPath()
+    {
+        return $this->_aConfig['tmp.path'];
+    }
+
     public function hasProject($sProject)
     {
-        if (isset($this->_aConfig['projects']['example'])) {
+        if (isset($this->_aConfig['projects'][$sProject])) {
             return true;
         }
 
@@ -43,8 +48,8 @@ class Cl_Config
 
     public function getProject($sProject)
     {
-        if (isset($this->_aConfig['projects']['example'])) {
-            return $this->_aCOnfig['projects']['example'];
+        if (isset($this->_aConfig['projects'][$sProject])) {
+            return $this->_aConfig['projects'][$sProject];
         }
 
         return false;

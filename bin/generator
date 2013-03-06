@@ -6,11 +6,11 @@ require realpath(preg_replace('/generator$/', '', __FILE__) . '/../include/boots
 $aArguments = $_SERVER['argv'];
 
 if (count($aArguments) > 1) {
-    if ('user' == $aArguments[1] && isset($_PROJECTS[$aArguments[2]])) {
+    if ('user' == $aArguments[1] && Cl_Config::getInstance()->hasProject($aArguments[2])) {
         new Cl_CmdLine_Command_ByUser($aArguments[2], $aArguments[3]);
 
         exit;
-    } elseif (isset($_PROJECTS[$aArguments[1]])) {
+    } elseif (Cl_Config::getInstance()->hasProject($aArguments[1])) {
         new Cl_CmdLine_Command_Build($aArguments[1]);
 
         exit;
