@@ -5,12 +5,16 @@
  * @author Marko Kercmar <m.kercmar@bigpoint.net>
  */
 
-global $_RPOJECTS;
+$aConfig = array();
 
-$_PROJECTS = array();
+// Data Directory
+$aConfig['data.path'] = PROJECT_ROOT . '/data/';
 
-// Example
-$_PROJECTS['example'] = array(
+// Projects
+$aConfig['projects']['example'] = array(
     'svn.server' => 'svn',
-    'svn.project' => 'example',
+    'svn.repo' => 'example',
+    'svn.auth' => 'userpass',
+    'svn.user' => 'svn',
+    'svn.pass' => '***'
     );
