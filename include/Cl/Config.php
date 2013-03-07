@@ -27,6 +27,11 @@ class Cl_Config
         return self::$_oInstance;
     }
 
+    public function all()
+    {
+        return $this->_aConfig;
+    }
+
     public function getDataPath()
     {
         return $this->_aConfig['data.path'];

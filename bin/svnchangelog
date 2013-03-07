@@ -1,0 +1,30 @@
+#!/usr/bin/php
+<?php
+// include bootstrap
+require realpath(preg_replace('/svnchangelog$/', '', __FILE__) . '/../include/bootstrap.php');
+
+// save cwd
+$sCwd = getcwd();
+
+define('CLIENT_CWD', $sCwd);
+
+// get arguments
+$aArguments = $_SERVER['argv'];
+
+if (count($aArguments) > 1) {
+    if ($aArguments[1] == 'update') {
+        new Cl_CmdLine_Command_Update();
+
+        exit;
+    } elseif ($aArguments[1] == 'config') {
+        new Cl_CmdLine_Command_Config();
+
+        exit;
+    } elseif ($aArguments[1] == 'clean') {
+        new Cl_CmdLine_Command_Clean();
+
+        exit;
+    }
+}
+
+new Cl_CmdLine_Command_Help();
