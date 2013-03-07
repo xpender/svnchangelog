@@ -14,5 +14,7 @@ class Cl_Data_Tags extends Cl_DataAbstract
         $this->_sProject = $sProject;
 
         $this->_sDataFile = Cl_Config::getInstance()->getDataPath() . '/' . $sProject . '.tags.db.txt';
+
+        parent::__construct();
     }
 }

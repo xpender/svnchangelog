@@ -152,6 +152,8 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             $aTagsByRev[$aTag['revision.scm']] = $aTag['tag'];
         }
 
+        krsort($aTagsByRev);
+
         // get revs..
         $aRevs = array_keys($aTagsByRev);
 

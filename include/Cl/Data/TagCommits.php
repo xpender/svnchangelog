@@ -18,5 +18,7 @@ class Cl_Data_TagCommits extends Cl_DataAbstract
         $this->_sTag = $sTag;
 
         $this->_sDataFile = Cl_Config::getInstance()->getDataPath() . '/' . $sProject . '.tag.' . $sTag . '.db.txt';
+
+        parent::__construct();
     }
 }

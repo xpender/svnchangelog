@@ -11,6 +11,11 @@ abstract class Cl_DataAbstract
 
     protected $_aData;
 
+    public function __construct()
+    {
+        $this->_readDbFile();
+    }
+
     protected function _readDbFile()
     {
         if (!file_exists($this->_sDataFile)) {
