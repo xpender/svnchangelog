@@ -48,5 +48,7 @@ class Cl_CmdLine_Command_Clean extends Cl_CmdLine_CommandAbstract
             );
         
         $oDataTags->truncate();
+
+        // TODO: think about unlink'ing files..
     }
 }

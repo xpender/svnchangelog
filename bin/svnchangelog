@@ -12,16 +12,16 @@ define('CLIENT_CWD', $sCwd);
 $aArguments = $_SERVER['argv'];
 
 if (count($aArguments) > 1) {
-    if ($aArguments[1] == 'update') {
-        new Cl_CmdLine_Command_Update();
+    if ($aArguments[1] == 'update' && isset($aArguments[2])) {
+        new Cl_CmdLine_Command_Update($aArguments[2]);
 
         exit;
     } elseif ($aArguments[1] == 'config') {
         new Cl_CmdLine_Command_Config();
 
         exit;
-    } elseif ($aArguments[1] == 'clean') {
-        new Cl_CmdLine_Command_Clean();
+    } elseif ($aArguments[1] == 'clean' && isset($aArguments[2])) {
+        new Cl_CmdLine_Command_Clean($aArguments[2]);
 
         exit;
     }

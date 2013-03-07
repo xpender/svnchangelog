@@ -23,7 +23,7 @@ abstract class Cl_DataAbstract
             $this->_sDataFile
             );
 
-        $this->_aData = json_encode(
+        $this->_aData = json_decode(
             $sContent,
             true
             );
@@ -33,8 +33,13 @@ abstract class Cl_DataAbstract
     {
         file_put_contents(
             $this->_sDataFile,
-            $sContent
+            json_encode($this->_aData)
             );
+    }
+
+    public function all()
+    {
+        return $this->_aData;
     }
     
     public function exists($sKey)
@@ -68,5 +73,17 @@ abstract class Cl_DataAbstract
         unset($this->_aData[$sKey]);
 
         return true;
+    }
+
+    public function truncate()
+    {
+        $this->_aData = array();
+
+        return true;
+    }
+
+    public function __destruct()
+    {
+        $this->_writeDbFile();
     }
 }
