@@ -120,7 +120,7 @@ class Cl_CmdLine_Command_Build
                 $sHtml .= '</td>' . "\n";
                 $sHtml .= '</tr>' . "\n";
 
-                if (count($aCommit['merges'])) {
+                if (isset($aCommit['merges']) && count($aCommit['merges'])) {
                     $sHtml .= '<tr>' . "\n";
                     $sHtml .= '<td></td>' . "\n";
                     $sHtml .= '<td>Contains merges:</td>' . "\n";

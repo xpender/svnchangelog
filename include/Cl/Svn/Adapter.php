@@ -61,7 +61,7 @@ class Cl_Svn_Adapter
         echo "[#] " . $sCommand . "\n";
 
         ob_start();
-        passthru($sCommand, &$iReturn);
+        passthru($sCommand, $iReturn);
 
         $sOutput = ob_get_contents();
 
