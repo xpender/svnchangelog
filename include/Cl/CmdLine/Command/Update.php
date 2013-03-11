@@ -216,7 +216,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                         'author' => $aCommit['author'],
                         'date' => $aCommit['date'],
                         'message' => (isset($aCommit['message']) && strlen(trim($aCommit['message'])) > 0) ? $aCommit['message'] : false,
-                        'merges' => (count($aCommit['merges']) > 0) ? $aCommit['merges'] : false
+                        'merges' => (isset($aCommit['merges']) && count($aCommit['merges']) > 0) ? $aCommit['merges'] : false
                         )
                     );
             }
