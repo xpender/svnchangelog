@@ -29,6 +29,8 @@ class Cl_Svn_Adapter
             $sSvnUrl .= 'svn://';
         } elseif ($this->_aConfig['svn.proto'] == 'svn+ssh') {
             $sSvnUrl .= 'svn+ssh://';
+        } elseif ($this->_aConfig['svn.proto'] == 'file') {
+            $sSvnUrl .= 'file://';
         } else {
             throw new Exception(
                 'Unknown svn.proto'
@@ -50,6 +52,8 @@ class Cl_Svn_Adapter
             $sCommand .= '--password ' . $this->_aConfig['svn.pass'] . ' ';
         } elseif ($this->_aConfig['svn.auth'] == 'kerberos') {
             $sCommand .= '--username ' . $this->_aConfig['svn.user'] . ' ';
+        } elseif ($this->_aConfig['svn.auth'] == 'none') {
+            // Nothing
         } else {
             throw new Exception(
                 'Unknown svn.auth'
