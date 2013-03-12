@@ -87,8 +87,9 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
         $sTmpFile = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject) . '.tags.list.xml';
 
         // call SCM..
-        $this->_getSvnAdapter()->llist(
+        $this->_getSvnAdapter()->log(
             'tags/',
+            true,
             true,
             $sTmpFile
             );
@@ -96,8 +97,8 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
         // init parser..
         $oParserTags = new Cl_Parser_Tags();
 
-        // parse tags xml
-        $aAllTags = $oParserTags->parseXml(
+        // parse
+        $aAllTags = $oParserTags->parseLogXml(
             $sTmpFile
             );
 
@@ -108,13 +109,18 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                 continue;
             }
 
+            print_r($sTag);
+            print_r($aInfo);
+
             if (!$oDataTags->exists($sTag)) {
                 $oDataTags->insert(
                     $sTag,
                     array(
                         'tag' => $sTag,
                         'revision.scm' => $aInfo['revision'],
-                        'revision.local' => 0
+                        'revision.local' => 0,
+                        'copyfrompath' => $aInfo['copyFromPath'],
+                        'copyfromrev.scm' => $aInfo['copyFromRev']
                         )
                     );
             } else {
@@ -125,7 +131,9 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     array(
                         'tag' => $sTag,
                         'revision.scm' => $aInfo['revision'],
-                        'revision.local' => $aLocal['revision.local']
+                        'revision.local' => $aLocal['revision.local'],
+                        'copyfrompath' => $aInfo['copyFromPath'],
+                        'copyfromrev.scm' => $aInfo['copyFromRev']
                         )
                     );
             }

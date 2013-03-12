@@ -107,11 +107,11 @@ class Cl_Svn_Adapter
             );
     }
 
-    public function log($sPath = '', $bXml = false, $sOutputFile = false)
+    public function log($sPath = '', $bVerbose = false, $bXml = false, $sOutputFile = false)
     {
         return self::_execute(
             'log',
-            ($bXml ? '--xml ' : '') . $this->getSvnUrl() . $sPath,
+            ($bVerbose ? '--verbose ' : '') . ($bXml ? '--xml ' : '') . $this->getSvnUrl() . $sPath,
             $sOutputFile
             );
     }
