@@ -263,7 +263,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     $iParentBranchRev,
                     $aCurBranch['rev'],
                     'tags/' . $sTagName . '/',
-                    true,
+                    false,
                     false,
                     $sTmpFile
                     );
