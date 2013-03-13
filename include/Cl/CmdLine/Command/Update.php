@@ -87,12 +87,17 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
         $sTmpFile = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject) . '.tags.list.xml';
 
         // call SCM..
-        $this->_getSvnAdapter()->log(
+        $bSvn = $this->_getSvnAdapter()->log(
             'tags/',
             true,
             true,
             $sTmpFile
             );
+
+        if (!$bSvn) {
+            echo "[!] svn error\n";
+            exit;
+        }
 
         // init parser..
         $oParserTags = new Cl_Parser_Tags();
@@ -254,7 +259,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                 $iParentBranchRev = array_shift($aBranchRevisions[$sParentBranch]);
 
                 // call svn adapter
-                $this->_getSvnAdapter()->logRevMerge(
+                $bSvn = $this->_getSvnAdapter()->logRevMerge(
                     $iParentBranchRev,
                     $aCurBranch['rev'],
                     'tags/' . $sTagName . '/',
@@ -264,7 +269,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     );
             } else {
                 // call svn adapter
-                $this->_getSvnAdapter()->logRevMerge(
+                $bSvn = $this->_getSvnAdapter()->logRevMerge(
                     $iParentRev,
                     $aCurBranch['rev'],
                     'branches/' . $aCurBranch['name'] . '/',
@@ -272,6 +277,12 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     false,
                     $sTmpFile
                     );
+            }
+
+            if (!$bSvn) {
+                echo "[!] svn error\n";
+
+                continue;
             }
 
             // parse commit info

@@ -72,9 +72,7 @@ class Cl_Svn_Adapter
         ob_end_clean();
 
         if ($iReturn != 0) {
-            throw new Exception(
-                'svn errcode ' . $iReturn
-                );
+            return false;
         }
 
         if ($sOutputFile) {
