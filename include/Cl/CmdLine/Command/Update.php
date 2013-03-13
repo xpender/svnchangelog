@@ -109,8 +109,11 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                 continue;
             }
 
-            print_r($sTag);
-            print_r($aInfo);
+            if (!preg_match('/^\/branches\/[a-zA-Z0-9_\-\.]+$/', $aInfo['copyFromPath'])) {
+                continue;
+            }
+
+            $aInfo['branch'] = str_replace('/branches/', '', $aInfo['copyFromPath']);
 
             if (!$oDataTags->exists($sTag)) {
                 $oDataTags->insert(
@@ -119,8 +122,8 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                         'tag' => $sTag,
                         'revision.scm' => $aInfo['revision'],
                         'revision.local' => 0,
-                        'copyfrompath' => $aInfo['copyFromPath'],
-                        'copyfromrev.scm' => $aInfo['copyFromRev']
+                        'branch.name' => $aInfo['branch'],
+                        'branch.rev' => $aInfo['copyFromRev']
                         )
                     );
             } else {
@@ -132,8 +135,8 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                         'tag' => $sTag,
                         'revision.scm' => $aInfo['revision'],
                         'revision.local' => $aLocal['revision.local'],
-                        'copyfrompath' => $aInfo['copyFromPath'],
-                        'copyfromrev.scm' => $aInfo['copyFromRev']
+                        'branch.name' => $aInfo['branch'],
+                        'branch.rev' => $aInfo['copyFromRev']
                         )
                     );
             }
@@ -153,29 +156,39 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
         // init log parser..
         $oParserLog = new Cl_Parser_Log();
 
-        // generate list of tags by revision
+        // generate helper arrays
         $aTagsByRev = array();
+        $aTagsToBranch = array();
+        $aBranchRevisions = array();
 
         foreach ($oDataTags->all() as $aTag) {
+            // rev -> tag
             $aTagsByRev[$aTag['revision.scm']] = $aTag['tag'];
+            
+            // tag -> branch
+            $aTagsToBranch[$aTag['tag']] = array(
+                'name' => $aTag['branch.name'],
+                'rev' => $aTag['branch.rev']
+                );
+
+            // branch -> revisions
+            $aBranchRevisions[$aTag['branch.name']][] = $aTag['branch.rev'];
+
+            arsort($aBranchRevisions[$aTag['branch.name']], SORT_NUMERIC);
         }
 
         krsort($aTagsByRev);
 
-        // get revs..
-        $aRevs = array_keys($aTagsByRev);
+        uksort(
+            $aBranchRevisions,
+            'Cl_Util_Sort::sortByBranchVersion'
+            );
 
-        // get current rev
-        $iCurrentRev = array_shift($aRevs);
-
-        // iterate..
+        // iterate over tags..
         foreach ($aTagsByRev as $sTagName) {
-            // get parent revs
-            $iParentRev = array_shift($aRevs);
-
-            if ($iParentRev == null) {
-                break;
-            }
+            // branch infos
+            $aBranch = $aTagsToBranch[$sTagName];
+            $aBranchRevs = $aBranchRevisions[$aBranch['name']];
 
             // check if revision local & scm differs..
             $aTagData = $oDataTags->get($sTagName);
@@ -185,18 +198,34 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
 
                 continue;
             }
+            
+            // log
+            echo '[+] Updating ' . $sTagName . ' - Branch: ' . $aBranch['name'] . '@' . $aBranch['rev'] . "\n";
 
-            // update this..
-            echo "[+] Updating $sTagName\n";
+            // find previous branch rev on which we compare..
+            $iParentRev = false;
 
+            $k = array_search($aBranch['rev'], $aBranchRevs) + 1;
+
+            if (isset($aBranchRevs[$k])) {
+                $iParentRev = $aBranchRevs[$k];
+            }
+
+            // TODO: implement compare between branches
+            if (!$iParentRev) {
+                echo "[!] Skipped: " . $sTagName . "\n";
+
+                continue;
+            }
+            
             // tmp file
             $sTmpFile = $sTmpFileBase . '.' . str_replace(array('/', ' ', "'", '"'), '-', $sTagName) . '.log';
 
             // call svn adapter
             $this->_getSvnAdapter()->logRevMerge(
                 $iParentRev,
-                $iCurrentRev,
-                'tags/' . $sTagName . '/',
+                $aBranch['rev'],
+                'branches/' . $aBranch['name'] . '/',
                 false,
                 $sTmpFile
                 );
@@ -236,9 +265,6 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                 $sTagName,
                 $aTagData
                 );
-
-            // update current rev
-            $iCurrentRev = $iParentRev;
         }
     }
 
