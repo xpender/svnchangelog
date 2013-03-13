@@ -175,6 +175,11 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             $aBranchRevisions[$aTag['branch.name']][] = $aTag['branch.rev'];
 
             arsort($aBranchRevisions[$aTag['branch.name']], SORT_NUMERIC);
+
+            // rev -> branch
+            $aBranchByRev[$aTag['branch.rev']] = $aTag['branch.name'];
+
+            $aBranchRevs[] = $aTag['branch.rev'];
         }
 
         krsort($aTagsByRev);
@@ -184,11 +189,13 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             'Cl_Util_Sort::sortByBranchVersion'
             );
 
+        krsort($aBranchRevs);
+
         // iterate over tags..
         foreach ($aTagsByRev as $sTagName) {
             // branch infos
-            $aBranch = $aTagsToBranch[$sTagName];
-            $aBranchRevs = $aBranchRevisions[$aBranch['name']];
+            $aCurBranch = $aTagsToBranch[$sTagName];
+            $aCurBranchRevs = $aBranchRevisions[$aCurBranch['name']];
 
             // check if revision local & scm differs..
             $aTagData = $oDataTags->get($sTagName);
@@ -200,35 +207,72 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             }
             
             // log
-            echo '[+] Updating ' . $sTagName . ' - Branch: ' . $aBranch['name'] . '@' . $aBranch['rev'] . "\n";
+            echo '[+] Updating ' . $sTagName . ' - Branch: ' . $aCurBranch['name'] . '@' . $aCurBranch['rev'] . "\n";
 
             // find previous branch rev on which we compare..
             $iParentRev = false;
 
-            $k = array_search($aBranch['rev'], $aBranchRevs) + 1;
+            $k = array_search($aCurBranch['rev'], $aCurBranchRevs) + 1;
 
-            if (isset($aBranchRevs[$k])) {
-                $iParentRev = $aBranchRevs[$k];
-            }
-
-            // TODO: implement compare between branches
-            if (!$iParentRev) {
-                echo "[!] Skipped: " . $sTagName . "\n";
-
-                continue;
+            if (isset($aCurBranchRevs[$k])) {
+                $iParentRev = $aCurBranchRevs[$k];
             }
             
             // tmp file
             $sTmpFile = $sTmpFileBase . '.' . str_replace(array('/', ' ', "'", '"'), '-', $sTagName) . '.log';
 
-            // call svn adapter
-            $this->_getSvnAdapter()->logRevMerge(
-                $iParentRev,
-                $aBranch['rev'],
-                'branches/' . $aBranch['name'] . '/',
-                false,
-                $sTmpFile
-                );
+            if (!$iParentRev) {
+                /**
+                 * Sorry, in this if case this get's stupid and wired.
+                 *
+                 * Basically, old version of svnchangelog compared tags by parent tag revision and current tag revision
+                 * using "svn log" with parameter "--use-merge-history".
+                 *
+                 * The problem we found on our repositories that on some tags it runs randomly into a loop.
+                 * It's really one tag doesn't work. Another some minutes ago works.. Both been copied from the same branch
+                 * and the only difference was one/two files been merged in or commited directly to the branch.
+                 * 
+                 * Happend at more than one repostiroy. Maybe, we shouldn't use SVN with Branches.. But yeah..
+                 *
+                 * That's the reason I rewrote this tool and this solution works better.. Still not perfect.
+                 *
+                 * Probably I need to redo this again and get every commit with all meta data (incl. svn:merge-info) and create
+                 * the branch/tag/merge tree on my own. Next time :/
+                 */
+
+                $k = array_search($aCurBranch['rev'], $aBranchRevs) + 1;
+
+                if (!isset($aBranchRevs[$k])) {
+                    echo "[!] Skipped: " . $sTagName . "\n";
+                    
+                    continue;
+                }
+
+                // get parent branch$
+                $sParentBranch = $aBranchByRev[$aBranchRevs[$k]];
+
+                $iParentBranchRev = array_shift($aBranchRevisions[$sParentBranch]);
+
+                // call svn adapter
+                $this->_getSvnAdapter()->logRevMerge(
+                    $iParentBranchRev,
+                    $aCurBranch['rev'],
+                    'tags/' . $sTagName . '/',
+                    true,
+                    false,
+                    $sTmpFile
+                    );
+            } else {
+                // call svn adapter
+                $this->_getSvnAdapter()->logRevMerge(
+                    $iParentRev,
+                    $aCurBranch['rev'],
+                    'branches/' . $aCurBranch['name'] . '/',
+                    false,
+                    false,
+                    $sTmpFile
+                    );
+            }
 
             // parse commit info
             $aAllCommits = $oParserLog->parseWithMergeHistory(

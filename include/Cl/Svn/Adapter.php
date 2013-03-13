@@ -116,11 +116,11 @@ class Cl_Svn_Adapter
             );
     }
 
-    public function logRevMerge($sOldRev, $sNewRev, $sPath = '', $bXml = false, $sOutputFile = false)
+    public function logRevMerge($sOldRev, $sNewRev, $sPath = '', $bStopOnCopy = false, $bXml = false, $sOutputFile = false)
     {
         return self::_execute(
             'log',
-            '-g ' . ($bXml ? '--xml ' : '') .  '-r ' . $sOldRev . ':' . $sNewRev . ' ' . $this->getSvnUrl() . $sPath,
+            '-g ' . ($bStopOnCopy ? '--stop-on-copy ' : '') . ($bXml ? '--xml ' : '') .  '-r ' . $sOldRev . ':' . $sNewRev . ' ' . $this->getSvnUrl() . $sPath,
             $sOutputFile
             );
     }
