@@ -5,7 +5,21 @@
     <ul class="nav nav-list">
         <li class="nav-header">Tags</li>
         <?php
-        foreach ($this->get('oDataTags')->all() as $aTag) {
+        $aAllTags = $this->get('oDataTags')->all();
+
+        function sortByRev($a, $b) {
+            if ($a['revision.scm'] > $b['revision.scm']) {
+                return -1;
+            } elseif ($a['revision.scm'] < $b['revision.scm']) {
+                return 1;
+            }
+
+            return 0;
+        }
+
+        uasort($aAllTags, 'sortByRev');
+
+        foreach ($aAllTags as $aTag) {
             if ($this->get('sTag') == $aTag['tag']) {
         ?>
         <li class="active"><a href="/?action=changelog&project=<?=$this->get('sProject')?>&tag=<?=$aTag['tag'];?>"><?=$aTag['tag'];?></a></li>
