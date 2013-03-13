@@ -52,7 +52,7 @@ class Cl_Frontend_Template
     public function get($sName)
     {
         if (isset($this->_aVars[$sName])) {
-            return $htis->_aVars[$sName];
+            return $this->_aVars[$sName];
         }
 
         return null;

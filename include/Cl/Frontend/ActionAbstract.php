@@ -16,6 +16,14 @@ abstract class Cl_Frontend_ActionAbstract
             PROJECT_ROOT . '/include/Cl/Frontend/Templates/'
             );
 
+        // set some default stuff to template engine
+        $aConfig = Cl_Config::getInstance()->all();
+
+        $this->_oTemplate->assign(
+            'aProjects',
+            array_keys($aConfig['projects'])
+            );
+
         // execute
         $this->_execute();
     }

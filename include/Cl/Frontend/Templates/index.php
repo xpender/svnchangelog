@@ -1,7 +1,7 @@
 <?php $this->display('header'); ?>
 
-<div class="container">
-    <h1>Hallo!</h1>
+<div class="span12">
+    <h1>Hey there ;)</h1>
 </div>
 
 <?php $this->display('footer'); ?>
