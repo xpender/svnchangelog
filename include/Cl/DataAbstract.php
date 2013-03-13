@@ -7,6 +7,8 @@
  */
 abstract class Cl_DataAbstract
 {
+    protected $_bDataChanged = false;
+
     protected $_sDataFile;
 
     protected $_aData;
@@ -69,6 +71,8 @@ abstract class Cl_DataAbstract
     public function update($sKey, $aData)
     {
         $this->_aData[$sKey] = $aData;
+        
+        $this->_bDataChanged = true;
 
         return true;
     }
@@ -76,6 +80,8 @@ abstract class Cl_DataAbstract
     public function remove($sKey)
     {
         unset($this->_aData[$sKey]);
+
+        $this->_bDataChanged = true;
 
         return true;
     }
@@ -89,6 +95,8 @@ abstract class Cl_DataAbstract
 
     public function __destruct()
     {
-        $this->_writeDbFile();
+        if ($this->_bDataChanged) {
+            $this->_writeDbFile();
+        }
     }
 }
