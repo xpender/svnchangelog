@@ -79,6 +79,7 @@ class Cl_Parser_Log
                     }
 
                     $aCommits[$iMergedBy]['merges'][$iRevision] = array(
+                        'revision' => $iRevision,
                         'author' => $sAuthor,
                         'date' => $sDate,
                         'message' => $sMessage
