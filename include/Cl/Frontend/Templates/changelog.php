@@ -10,6 +10,10 @@
         ?>
         <li class="active"><a href="/?action=changelog&project=<?=$this->get('sProject')?>&tag=<?=$aTag['tag'];?>"><?=$aTag['tag'];?></a></li>
         <?php
+            } elseif ($aTag['revision.local'] == 0) {
+        ?>
+        <li><?=$aTag['tag'];?></li>
+        <?php
             } else {
         ?>
         <li><a href="/?action=changelog&project=<?=$this->get('sProject')?>&tag=<?=$aTag['tag'];?>"><?=$aTag['tag'];?></a></li>
@@ -39,7 +43,10 @@
     </thead>
     <tbody>
     <?php
-        foreach (array_reverse($oDataTagCommits->all()) as $aCommit) {
+    $aAllCommits = $oDataTagCommits->all();
+    krsort($aAllCommits);
+
+        foreach ($aAllCommits as $aCommit) {
     ?>
     <tr>
         <td><?=$aCommit['revision'];?></td>
