@@ -95,7 +95,7 @@ class Cl_Parser_Tags
                 }
 
                 // filter directly..
-                if (!preg_match('/1[a-zA-Z0-9_-]$/', $sTagName)) {
+                if (!preg_match('/[a-zA-Z0-9_-]$/', $sTagName)) {
                     continue;
                 }
 
