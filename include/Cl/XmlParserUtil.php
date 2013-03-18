@@ -37,7 +37,7 @@ class Cl_XmlParserUtil
         $this->_xmlObj = simplexml_load_file($filename);
         
         if ($this->_xmlObj === false) {
-            throw new Rama_Language_Exception(
+            throw new Exception(
                 "file '".$filename."' is not a valid xml document"
                 );
         }
@@ -54,7 +54,7 @@ class Cl_XmlParserUtil
         $this->_xmlObj = simplexml_load_string($sourceContent);
 
         if ($this->_xmlObj === false) {
-            throw new Rama_Language_Exception(
+            throw new Exception(
                 "given string is not a valid xml document"
                 );
         }

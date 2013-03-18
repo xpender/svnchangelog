@@ -67,20 +67,25 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             $this->_sProject
             );
 
-        // update branches with latest from SCM
-        echo "[*] updating branches from scm\n";
+        // update branch list
+        echo "[*] Branches: Updating list from SCM\n";
 
         $this->_updateBranchData($oDataBranches);
 
-        // update tags with latest from SCM
-        echo "[*] updating tags from scm\n";
+        // update branch commits
+        echo "[*] Branches: Updating commits from SCM\n";
 
-        $this->_updateTagsData($oDataTags);
+        $this->_updateBranchCommits($oDataBranches);
+
+        // update tags with latest from SCM
+        echo "[*] Tags: Updating list from SCM\n";
+
+        //$this->_updateTagsData($oDataTags);
 
         // update commits with latest from SCM
-        echo "[*] updating commits..\n";
+        echo "[*] Tags: Updating commits from SCM\n";
 
-        $this->_updateCommitData($oDataTags);
+        //$this->_updateCommitData($oDataTags);
 
         // finished..
         echo "[*] update finished\n";
@@ -93,7 +98,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
      */
     private function _updateBranchData(Cl_Data_Branches &$oDataBranches)
     {
-        // tmp file for scm..
+        // tmp file..
         $sTmpFileBase = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject);
 
         // call SCM..
@@ -152,9 +157,11 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     }
                     
                     // parse info..
-                    $aInfo = $oParserLog->parseXml(
-                        file_get_contents(
-                            $sTmpFileBase . '.branch.' . $aEntry['name'] . '.info.xml'
+                    $aInfo = array_shift(
+                        $oParserLog->parseXml(
+                            file_get_contents(
+                                $sTmpFileBase . '.branch.' . $aEntry['name'] . '.info.xml'
+                                )
                             )
                         );
 
@@ -172,6 +179,85 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * fetches commits from branches and updates data storage
+     *
+     * @param Cl_Data_Branches $oDataBranches
+     */
+    private function _updateBranchCommits(&$oDataBranches)
+    {
+        // tmp file..
+        $sTmpFileBase = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject);
+
+        // get parsers..
+        $oParserLog = new Cl_Svn_Parser_Log();
+
+        // iterate over branches..
+        foreach ($oDataBranches->all() as $aBranch) {
+            // rev.latest and rev.local same? -> skip
+            if ($aBranch['rev.local'] == $aBranch['rev.latest']) {
+                continue;
+            }
+
+            // get from SCM
+            $bSvn = $this->_getSvnAdapter()->custom(
+                'log',
+                'branches/' . $aBranch['name'],
+                '-g -v --stop-on-copy --xml',
+                $sTmpFileBase . '.branch.' . $aBranch['name'] . '.log.xml'
+                );
+
+            if (!$bSvn) {
+                echo "[!] svn error\n";
+
+                continue;
+            }
+
+            // parse
+            $aCommits = $oParserLog->parseXml(
+                file_get_contents(
+                    $sTmpFileBase . '.branch.' . $aBranch['name'] . '.log.xml'
+                    )
+                );
+
+            // iterate over commits
+            $aBranchCommits = array();
+
+            foreach ($aCommits as $aCommit) {
+                // update data commit
+                $oDataCommit = new Cl_Data_Commit(
+                    $this->_sProject,
+                    $aCommit['revision']
+                    );
+
+                $oDataCommit->update(
+                    'content',
+                    $aCommit
+                    );
+
+                unset($oDataCommit);
+
+                // add to branchc ommits
+                $aBranchCommits[] = $aCommit['revision'];
+            }
+
+            // update branch data..
+            rsort(
+                $aBranchCommits,
+                SORT_NUMERIC
+                );
+
+            // save to branch data..
+            $aBranch['commits'] = $aBranchCommits;
+            $aBranch['rev.local'] = $aBranch['rev.latest'];
+
+            $oDataBranches->update(
+                $aBranch['name'],
+                $aBranch
+                );
         }
     }
 
