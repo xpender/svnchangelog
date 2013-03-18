@@ -13,7 +13,7 @@ class Cl_Data_Branches extends Cl_DataAbstract
     {
         $this->_sProject = $sProject;
 
-        $this->_sDataFile = Cl_Config::getInstance()->getDataPath() . '/' . $sProject . 'branches.db.txt';
+        $this->_sDataFile = Cl_Config::getInstance()->getDataPath() . '/' . $sProject . '.branches.db.txt';
 
         parent::__construct();
     }

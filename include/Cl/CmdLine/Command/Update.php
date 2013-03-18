@@ -123,8 +123,17 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
         foreach ($aList as $aEntry) {
             if ($aEntry['kind'] == 'dir') {
                 if (strpos($aEntry['name'], 'RELEASE_') === 0) {
-                    // already exists - then continue..
+                    // already exists - only update rev.latest
                     if ($oDataBranches->exists($aEntry['name'])) {
+                        $aData = $oDataBranches->get($aEntry['name']);
+
+                        $aData['rev.latest'] = $aEntry['revision'];
+
+                        $oDataBranches->update(
+                            $aEntry['name'],
+                            $aData
+                            );
+
                         continue;
                     }
 
@@ -155,7 +164,9 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                             $aEntry['name'],
                             array(
                                 'name' => $aEntry['name'],
-                                'rev.create' => $aInfo['revision']
+                                'rev.create' => $aInfo['revision'],
+                                'rev.latest' => $aEntry['revision'],
+                                'rev.local' => 0
                                 )
                             );
                     }
