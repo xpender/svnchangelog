@@ -124,11 +124,11 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                 $oDataTags->insert(
                     $sTag,
                     array(
-                        'tag' => $sTag,
-                        'revision.scm' => $aInfo['revision'],
-                        'revision.local' => 0,
+                        'tag.name' => $sTag,
+                        'tag.rev' => $aInfo['revision'],
                         'branch.name' => $aInfo['branch'],
-                        'branch.rev' => $aInfo['copyFromRev']
+                        'branch.rev' => $aInfo['copyFromRev'],
+                        'local.rev' => 0
                         )
                     );
             } else {
@@ -137,11 +137,11 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                 $oDataTags->update(
                     $sTag,
                     array(
-                        'tag' => $sTag,
-                        'revision.scm' => $aInfo['revision'],
-                        'revision.local' => $aLocal['revision.local'],
+                        'tag.name' => $sTag,
+                        'tag.rev' => $aInfo['revision'],
                         'branch.name' => $aInfo['branch'],
-                        'branch.rev' => $aInfo['copyFromRev']
+                        'branch.rev' => $aInfo['copyFromRev'],
+                        'local.rev' => $aInfo['local.rev']
                         )
                     );
             }
@@ -168,10 +168,10 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
 
         foreach ($oDataTags->all() as $aTag) {
             // rev -> tag
-            $aTagsByRev[$aTag['revision.scm']] = $aTag['tag'];
+            $aTagsByRev[$aTag['tag.rev']] = $aTag['tag.name'];
             
             // tag -> branch
-            $aTagsToBranch[$aTag['tag']] = array(
+            $aTagsToBranch[$aTag['tag.name']] = array(
                 'name' => $aTag['branch.name'],
                 'rev' => $aTag['branch.rev']
                 );
@@ -205,7 +205,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             // check if revision local & scm differs..
             $aTagData = $oDataTags->get($sTagName);
 
-            if ($aTagData['revision.scm'] == $aTagData['revision.local']) {
+            if ($aTagData['tag.rev'] == $aTagData['local.rev']) {
                 echo "[-] Skipping $sTagName\n";
 
                 continue;
@@ -314,7 +314,7 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
             }
 
             // update data tags
-            $aTagData['revision.local'] = $aTagData['revision.scm'];
+            $aTagData['local.rev'] = $aTagData['tag.rev'];
 
             $oDataTags->update(
                 $sTagName,

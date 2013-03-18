@@ -8,9 +8,9 @@
         $aAllTags = $this->get('oDataTags')->all();
 
         function sortByRev($a, $b) {
-            if ($a['revision.scm'] > $b['revision.scm']) {
+            if ($a['tag.rev'] > $b['tag.rev']) {
                 return -1;
-            } elseif ($a['revision.scm'] < $b['revision.scm']) {
+            } elseif ($a['tag.rev'] < $b['tag.rev']) {
                 return 1;
             }
 
@@ -20,17 +20,17 @@
         uasort($aAllTags, 'sortByRev');
 
         foreach ($aAllTags as $aTag) {
-            if ($this->get('sTag') == $aTag['tag']) {
+            if ($this->get('sTag') == $aTag['tag.name']) {
         ?>
-        <li class="active"><a href="/?action=changelog&project=<?=$this->get('sProject')?>&tag=<?=$aTag['tag'];?>"><?=$aTag['tag'];?></a></li>
+        <li class="active"><a href="/?action=changelog&tag=<?=$aTag['tag.name'];?>"><?=$aTag['tag.name'];?></a></li>
         <?php
-            } elseif ($aTag['revision.local'] == 0) {
+            } elseif ($aTag['local.rev'] == 0) {
         ?>
-        <li><?=$aTag['tag'];?></li>
+        <li><?=$aTag['tag.name'];?></li>
         <?php
             } else {
         ?>
-        <li><a href="/?action=changelog&project=<?=$this->get('sProject')?>&tag=<?=$aTag['tag'];?>"><?=$aTag['tag'];?></a></li>
+        <li><a href="/?action=changelog&tag=<?=$aTag['tag.name'];?>"><?=$aTag['tag.name'];?></a></li>
         <?php
             }
         }
