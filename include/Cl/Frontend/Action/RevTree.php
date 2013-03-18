@@ -5,11 +5,11 @@
  * @package net.xpender.svnchangelog
  * @author Marko Kercmar <m.kercmar@bigpoint.net>
  */
-class Cl_Frontend_Action_TagTree extends Cl_Frontend_ActionAbstract
+class Cl_Frontend_Action_RevTree extends Cl_Frontend_ActionAbstract
 {
     public function getName()
     {
-        return 'tagTree';
+        return 'revTree';
     }
 
     protected function _execute()
@@ -28,16 +28,28 @@ class Cl_Frontend_Action_TagTree extends Cl_Frontend_ActionAbstract
             $sProject
             );
 
-        // a rev scale
+        // get branches..
+        $oDataBranches = new Cl_Data_Branches(
+            $sProject
+            );
+
+        // le rev scale
         $aRevs = array();
 
         foreach ($oDataTags->all() as $aTag) {
             $aRevs[$aTag['tag.rev']] = array(
-                'type' => 'tag.create',
+                'kind' => 'tag',
                 'tag.name' => $aTag['tag.name'],
                 'tag.rev' => $aTag['tag.rev'],
                 'branch.name' => $aTag['branch.name'],
                 'branch.rev' => $aTag['branch.rev']
+                );
+        }
+
+        foreach ($oDataBranches->all() as $aBranch) {
+            $aRevs[$aBranch['rev.create']] = array(
+                'kind' => 'branch',
+                'branch.name' => $aBranch['name']
                 );
         }
 
@@ -52,7 +64,7 @@ class Cl_Frontend_Action_TagTree extends Cl_Frontend_ActionAbstract
 
         // show template
         $this->_oTemplate->display(
-            'tagTree'
+            'revTree'
             );
     }
 }

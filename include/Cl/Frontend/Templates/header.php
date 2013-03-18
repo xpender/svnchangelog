@@ -31,7 +31,7 @@
                 <li class="divider-vertical"></li>
                 <?php if ($this->get('sCurrentProject')) { ?>
                 <li<?=($this->get('sCurrentAction') == 'changelog' ? ' class="active"' : '');?>><a href="/?action=changelog">Changelog</a></li>
-                <li<?=($this->get('sCurrentAction') == 'tagTree' ? ' class="active"' : '');?>><a href="/?action=tagTree">Tag-Tree</a></li>
+                <li<?=($this->get('sCurrentAction') == 'revTree' ? ' class="active"' : '');?>><a href="/?action=revTree">Rev-Tree</a></li>
                 <?php } else { ?>
                 <li><a href="#"><strong>Select project &gt; &gt;</strong></a></li>
                 <?php } ?>
