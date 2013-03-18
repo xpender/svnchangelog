@@ -7,15 +7,21 @@
  */
 class Cl_Frontend_Action_Changelog extends Cl_Frontend_ActionAbstract
 {
+    public function getName()
+    {
+        return 'changelog';
+    }
+
     protected function _execute()
     {
-        // check given project
-        $sProject = $_REQUEST['project'];
-
-        if (!Cl_Config::getInstance()->hasProject($sProject)) {
+        // project via session
+        if (!Cl_Frontend_Session::getProject()) {
             Header('Location: /');
             exit;
         }
+
+        // get project
+        $sProject = Cl_Frontend_Session::getProject();
 
         // get tags..
         $oDataTags = new Cl_Data_Tags(

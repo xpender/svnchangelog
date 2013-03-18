@@ -16,7 +16,7 @@
 </head>
 <body>
 
-<div class="navbar navbar-inverse navbar-fixed-top">
+<div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container-fluid">
             <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -27,7 +27,15 @@
             <a class="brand" href="#">svnchangelog</a>
             <div class="nav-collapse collapse">
             <ul class="nav">
-                <li class="active"><a href="/">Home</a></li>
+                <li<?=($this->get('sCurrentAction') == 'index' ? ' class="active"' : '');?>><a href="/">Home</a></li>
+                <li class="divider-vertical"></li>
+                <?php if ($this->get('sCurrentProject')) { ?>
+                <li<?=($this->get('sCurrentAction') == 'changelog' ? ' class="active"' : '');?>><a href="/?action=changelog">Changelog</a></li>
+                <?php } else { ?>
+                <li><a href="#"><strong>Select project &gt; &gt;</strong></a></li>
+                <?php } ?>
+            </ul>
+            <ul class="nav pull-right">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Project<b class="caret"></b></a>
                     <ul class="dropdown-menu">

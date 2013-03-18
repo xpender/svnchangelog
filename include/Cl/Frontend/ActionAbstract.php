@@ -24,9 +24,23 @@ abstract class Cl_Frontend_ActionAbstract
             array_keys($aConfig['projects'])
             );
 
+        // current project if set..
+        $this->_oTemplate->assign(
+            'sCurrentProject',
+            Cl_Frontend_Session::getProject()
+            );
+
+        // current action
+        $this->_oTemplate->assign(
+            'sCurrentAction',
+            $this->getName()
+            );
+
         // execute
         $this->_execute();
     }
+
+    abstract public function getName();
 
     abstract protected function _execute();
 }
