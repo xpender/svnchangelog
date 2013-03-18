@@ -122,4 +122,13 @@ class Cl_Svn_Adapter
             $sOutputFile
             );
     }
+
+    public function custom($sCommand, $sPath, $sArguments, $sOutputFile = false)
+    {
+        return self::_execute(
+            $sCommand,
+            $sArguments . ' ' . $this->getSvnUrl() . $sPath,
+            $sOutputFile
+            );
+    }
 }

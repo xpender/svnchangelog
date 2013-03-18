@@ -57,10 +57,20 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
      */
     protected function _execute()
     {
+        // get branch data storage
+        $oDataBranches = new Cl_Data_Branches(
+            $this->_sProject
+            );
+
         // get tags data storage
         $oDataTags = new Cl_Data_Tags(
             $this->_sProject
             );
+
+        // update branches with latest from SCM
+        echo "[*] updating branches from scm\n";
+
+        $this->_updateBranchData($oDataBranches);
 
         // update tags with latest from SCM
         echo "[*] updating tags from scm\n";
@@ -77,7 +87,85 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
     }
 
     /**
-     * fetches latest tags from SCM and updates given data storage
+     * fetches latest RELEASE_ branches from SCM and updates given data storage
+     *
+     * @param Cl_Data_Branches $oDataBranches
+     */
+    private function _updateBranchData(Cl_Data_Branches &$oDataBranches)
+    {
+        // tmp file for scm..
+        $sTmpFileBase = Cl_Config::getInstance()->getTmpPath() . md5($this->_sProject);
+
+        // call SCM..
+        $bSvn = $this->_getSvnAdapter()->llist(
+            'branches/',
+            true,
+            $sTmpFileBase . '.branches.list.xml'
+            );
+
+        if (!$bSvn) {
+            echo "[!] svn error\n";
+            exit;
+        }
+
+        // get parsers
+        $oParserList = new Cl_Svn_Parser_List();
+        $oParserLog = new Cl_Svn_Parser_Log();
+
+        // parse list..
+        $aList = $oParserList->parseXml(
+            file_get_contents(
+                $sTmpFileBase . '.branches.list.xml'
+                )
+            );
+
+        // filter RELEASE branches, get additional info & add to $oDataBranches
+        foreach ($aList as $aEntry) {
+            if ($aEntry['kind'] == 'dir') {
+                if (strpos($aEntry['name'], 'RELEASE_') === 0) {
+                    // already exists - then continue..
+                    if ($oDataBranches->exists($aEntry['name'])) {
+                        continue;
+                    }
+
+                    // we need to determ which revision branch was created..
+                    $bSvn = $this->_getSvnAdapter()->custom(
+                        'log',
+                        'branches/' . $aEntry['name'],
+                        '-v -r0:HEAD --stop-on-copy --limit 1 --xml',
+                        $sTmpFileBase . '.branch.' . $aEntry['name'] . '.info.xml'
+                        );
+
+                    if (!$bSvn) {
+                        echo "[!] svn error\n";
+                        
+                        continue;
+                    }
+                    
+                    // parse info..
+                    $aInfo = $oParserLog->parseXml(
+                        file_get_contents(
+                            $sTmpFileBase . '.branch.' . $aEntry['name'] . '.info.xml'
+                            )
+                        );
+
+                    // store data..
+                    if (!$oDataBranches->exists($aEntry['name'])) {
+                        $oDataBranches->insert(
+                            $aEntry['name'],
+                            array(
+                                'name' => $aEntry['name'],
+                                'rev.create' => $aInfo['revision']
+                                )
+                            );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * fetches latest RELEASE_tags from SCM and updates given data storage
      *
      * @param Cl_Data_Tags $oDataTags
      */
