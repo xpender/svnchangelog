@@ -32,10 +32,10 @@ class Cl_Frontend_Action_TagTree extends Cl_Frontend_ActionAbstract
         $aRevs = array();
 
         foreach ($oDataTags->all() as $aTag) {
-            $aRevs[$aTag['revision.scm']] = array(
+            $aRevs[$aTag['tag.rev']] = array(
                 'type' => 'tag.create',
-                'tag.name' => $aTag['tag'],
-                'tag.rev' => $aTag['revision.scm'],
+                'tag.name' => $aTag['tag.name'],
+                'tag.rev' => $aTag['tag.rev'],
                 'branch.name' => $aTag['branch.name'],
                 'branch.rev' => $aTag['branch.rev']
                 );
