@@ -68,7 +68,14 @@ class Cl_Svn_Parser_Log
     {
         // init xml parser util
         $oXml = new Cl_XmlParserUtil();
-        $oXml->loadString($sContent);
+
+        try {
+            $oXml->loadString($sContent);
+        } catch (Exception $e) {
+            // TODO: SVN IS STUPID AND GENERATES INVALID XML..
+
+            return array();
+        }
 
         // empty parsed array
         $aParsed = array();

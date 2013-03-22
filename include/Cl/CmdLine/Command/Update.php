@@ -223,6 +223,10 @@ class Cl_CmdLine_Command_Update extends Cl_CmdLine_CommandAbstract
                     )
                 );
 
+            if (!is_array($aCommits)) {
+                continue;
+            }
+
             // iterate over commits
             $aBranchCommits = array();
 
