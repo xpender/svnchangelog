@@ -19,4 +19,7 @@ if (isset($_REQUEST['project'])) {
 
 // le controller does the magic ;)
 $oController = new Cl_Frontend_Controller();
-$oController->dispatch($_REQUEST);
+
+$oController->dispatch(
+    $_REQUEST
+    );

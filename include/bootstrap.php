@@ -18,7 +18,10 @@ ini_set(
 require 'Cl/Autoload.php';
 
 spl_autoload_register(
-    array('Cl_Autoload', 'autoload')
+    array(
+        'Cl_Autoload',
+        'autoload'
+        )
     );
 
 // get config

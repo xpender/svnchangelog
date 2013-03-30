@@ -10,7 +10,7 @@ class Cl_Frontend_Controller
     public function dispatch($aRequest)
     {
         if (isset($aRequest['action'])) {
-            $sAction = $_REQUEST['action'];
+            $sAction = $aRequest['action'];
         } else {
             $sAction = 'index';
         }
